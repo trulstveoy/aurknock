@@ -11,16 +11,11 @@ define('app',["require", "exports", "aurelia-framework"], function (require, exp
     "use strict";
     var App = (function () {
         function App() {
-            this.message = 'Hello world';
             this.text = ko.observable('foo');
-            this.foo = { bar: 'Quick brown fox' };
         }
         App.prototype.update = function () {
-            this.message = this.reverse(this.message);
             this.text(this.reverse(this.text()));
-            this.foo.bar = this.reverse(this.foo.bar);
             console.log('text: ' + this.text());
-            console.log('foo.bar: ' + this.foo.bar);
         };
         App.prototype.reverse = function (text) {
             return text.split('').reverse().join('');
@@ -31,15 +26,7 @@ define('app',["require", "exports", "aurelia-framework"], function (require, exp
     __decorate([
         aurelia_framework_1.bindable,
         __metadata("design:type", Object)
-    ], App.prototype, "message", void 0);
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
     ], App.prototype, "text", void 0);
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
-    ], App.prototype, "foo", void 0);
 });
 
 define('environment',["require", "exports"], function (require, exports) {
@@ -62,8 +49,7 @@ define('main',["require", "exports", "./environment"], function (require, export
     function configure(aurelia) {
         aurelia.use
             .standardConfiguration()
-            .feature('resources')
-            .plugin('aurelia-breeze');
+            .feature('resources');
         if (environment_1.default.debug) {
             aurelia.use.developmentLogging();
         }
@@ -97,5 +83,5 @@ define('resources/index',["require", "exports", "aurelia-binding", "./adapters/o
     exports.configure = configure;
 });
 
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <h1>${message}</h1>\n  <h1>${text()}</h1>\n  <h1>${foo.bar}</h1>\n  <button click.trigger=\"update()\">Click me</button>\n</template>\n"; });
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <!--<h1>${message}</h1>-->\n  <h1>${text()}</h1>\n  <!--<h1>${foo.bar}</h1>-->\n  <button click.trigger=\"update()\">Click me</button>\n</template>\n"; });
 //# sourceMappingURL=app-bundle.js.map

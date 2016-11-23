@@ -113,11 +113,7 @@
           "aurelia-router",
           "aurelia-task-queue",
           "aurelia-templating",
-          "aurelia-templating-binding",
-          "aurelia-fetch-client",
-          "aurelia-breeze",
-          "breeze-client",
-          "breeze",          
+          "aurelia-templating-binding",          
           "text",
           {
             "name": "aurelia-templating-resources",

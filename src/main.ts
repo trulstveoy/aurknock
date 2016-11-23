@@ -12,8 +12,7 @@ import environment from './environment';
 export function configure(aurelia: Aurelia) {
   aurelia.use
     .standardConfiguration()
-    .feature('resources')
-    .plugin('aurelia-breeze');
+    .feature('resources');
 
   if (environment.debug) {
     aurelia.use.developmentLogging();

@@ -11420,162 +11420,6 @@ define('aurelia-bootstrapper',['exports', 'aurelia-pal', 'aurelia-pal-browser', 
 
   run();
 });
-define('aurelia-event-aggregator',['exports', 'aurelia-logging'], function (exports, _aureliaLogging) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.EventAggregator = undefined;
-  exports.includeEventsIn = includeEventsIn;
-  exports.configure = configure;
-
-  var LogManager = _interopRequireWildcard(_aureliaLogging);
-
-  function _interopRequireWildcard(obj) {
-    if (obj && obj.__esModule) {
-      return obj;
-    } else {
-      var newObj = {};
-
-      if (obj != null) {
-        for (var key in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
-        }
-      }
-
-      newObj.default = obj;
-      return newObj;
-    }
-  }
-
-  
-
-  var logger = LogManager.getLogger('event-aggregator');
-
-  var Handler = function () {
-    function Handler(messageType, callback) {
-      
-
-      this.messageType = messageType;
-      this.callback = callback;
-    }
-
-    Handler.prototype.handle = function handle(message) {
-      if (message instanceof this.messageType) {
-        this.callback.call(null, message);
-      }
-    };
-
-    return Handler;
-  }();
-
-  var EventAggregator = exports.EventAggregator = function () {
-    function EventAggregator() {
-      
-
-      this.eventLookup = {};
-      this.messageHandlers = [];
-    }
-
-    EventAggregator.prototype.publish = function publish(event, data) {
-      var subscribers = void 0;
-      var i = void 0;
-
-      if (!event) {
-        throw new Error('Event was invalid.');
-      }
-
-      if (typeof event === 'string') {
-        subscribers = this.eventLookup[event];
-        if (subscribers) {
-          subscribers = subscribers.slice();
-          i = subscribers.length;
-
-          try {
-            while (i--) {
-              subscribers[i](data, event);
-            }
-          } catch (e) {
-            logger.error(e);
-          }
-        }
-      } else {
-        subscribers = this.messageHandlers.slice();
-        i = subscribers.length;
-
-        try {
-          while (i--) {
-            subscribers[i].handle(event);
-          }
-        } catch (e) {
-          logger.error(e);
-        }
-      }
-    };
-
-    EventAggregator.prototype.subscribe = function subscribe(event, callback) {
-      var handler = void 0;
-      var subscribers = void 0;
-
-      if (!event) {
-        throw new Error('Event channel/type was invalid.');
-      }
-
-      if (typeof event === 'string') {
-        handler = callback;
-        subscribers = this.eventLookup[event] || (this.eventLookup[event] = []);
-      } else {
-        handler = new Handler(event, callback);
-        subscribers = this.messageHandlers;
-      }
-
-      subscribers.push(handler);
-
-      return {
-        dispose: function dispose() {
-          var idx = subscribers.indexOf(handler);
-          if (idx !== -1) {
-            subscribers.splice(idx, 1);
-          }
-        }
-      };
-    };
-
-    EventAggregator.prototype.subscribeOnce = function subscribeOnce(event, callback) {
-      var sub = this.subscribe(event, function (a, b) {
-        sub.dispose();
-        return callback(a, b);
-      });
-
-      return sub;
-    };
-
-    return EventAggregator;
-  }();
-
-  function includeEventsIn(obj) {
-    var ea = new EventAggregator();
-
-    obj.subscribeOnce = function (event, callback) {
-      return ea.subscribeOnce(event, callback);
-    };
-
-    obj.subscribe = function (event, callback) {
-      return ea.subscribe(event, callback);
-    };
-
-    obj.publish = function (event, data) {
-      ea.publish(event, data);
-    };
-
-    return ea;
-  }
-
-  function configure(config) {
-    config.instance(EventAggregator, includeEventsIn(config.aurelia));
-  }
-});
 define('aurelia-dependency-injection',['exports', 'aurelia-metadata', 'aurelia-pal'], function (exports, _aureliaMetadata, _aureliaPal) {
   'use strict';
 
@@ -12319,6 +12163,162 @@ define('aurelia-dependency-injection',['exports', 'aurelia-metadata', 'aurelia-p
         target.inject = rest;
       }
     };
+  }
+});
+define('aurelia-event-aggregator',['exports', 'aurelia-logging'], function (exports, _aureliaLogging) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.EventAggregator = undefined;
+  exports.includeEventsIn = includeEventsIn;
+  exports.configure = configure;
+
+  var LogManager = _interopRequireWildcard(_aureliaLogging);
+
+  function _interopRequireWildcard(obj) {
+    if (obj && obj.__esModule) {
+      return obj;
+    } else {
+      var newObj = {};
+
+      if (obj != null) {
+        for (var key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+        }
+      }
+
+      newObj.default = obj;
+      return newObj;
+    }
+  }
+
+  
+
+  var logger = LogManager.getLogger('event-aggregator');
+
+  var Handler = function () {
+    function Handler(messageType, callback) {
+      
+
+      this.messageType = messageType;
+      this.callback = callback;
+    }
+
+    Handler.prototype.handle = function handle(message) {
+      if (message instanceof this.messageType) {
+        this.callback.call(null, message);
+      }
+    };
+
+    return Handler;
+  }();
+
+  var EventAggregator = exports.EventAggregator = function () {
+    function EventAggregator() {
+      
+
+      this.eventLookup = {};
+      this.messageHandlers = [];
+    }
+
+    EventAggregator.prototype.publish = function publish(event, data) {
+      var subscribers = void 0;
+      var i = void 0;
+
+      if (!event) {
+        throw new Error('Event was invalid.');
+      }
+
+      if (typeof event === 'string') {
+        subscribers = this.eventLookup[event];
+        if (subscribers) {
+          subscribers = subscribers.slice();
+          i = subscribers.length;
+
+          try {
+            while (i--) {
+              subscribers[i](data, event);
+            }
+          } catch (e) {
+            logger.error(e);
+          }
+        }
+      } else {
+        subscribers = this.messageHandlers.slice();
+        i = subscribers.length;
+
+        try {
+          while (i--) {
+            subscribers[i].handle(event);
+          }
+        } catch (e) {
+          logger.error(e);
+        }
+      }
+    };
+
+    EventAggregator.prototype.subscribe = function subscribe(event, callback) {
+      var handler = void 0;
+      var subscribers = void 0;
+
+      if (!event) {
+        throw new Error('Event channel/type was invalid.');
+      }
+
+      if (typeof event === 'string') {
+        handler = callback;
+        subscribers = this.eventLookup[event] || (this.eventLookup[event] = []);
+      } else {
+        handler = new Handler(event, callback);
+        subscribers = this.messageHandlers;
+      }
+
+      subscribers.push(handler);
+
+      return {
+        dispose: function dispose() {
+          var idx = subscribers.indexOf(handler);
+          if (idx !== -1) {
+            subscribers.splice(idx, 1);
+          }
+        }
+      };
+    };
+
+    EventAggregator.prototype.subscribeOnce = function subscribeOnce(event, callback) {
+      var sub = this.subscribe(event, function (a, b) {
+        sub.dispose();
+        return callback(a, b);
+      });
+
+      return sub;
+    };
+
+    return EventAggregator;
+  }();
+
+  function includeEventsIn(obj) {
+    var ea = new EventAggregator();
+
+    obj.subscribeOnce = function (event, callback) {
+      return ea.subscribeOnce(event, callback);
+    };
+
+    obj.subscribe = function (event, callback) {
+      return ea.subscribe(event, callback);
+    };
+
+    obj.publish = function (event, data) {
+      ea.publish(event, data);
+    };
+
+    return ea;
+  }
+
+  function configure(config) {
+    config.instance(EventAggregator, includeEventsIn(config.aurelia));
   }
 });
 define('aurelia-framework',['exports', 'aurelia-dependency-injection', 'aurelia-binding', 'aurelia-metadata', 'aurelia-templating', 'aurelia-loader', 'aurelia-task-queue', 'aurelia-path', 'aurelia-pal', 'aurelia-logging'], function (exports, _aureliaDependencyInjection, _aureliaBinding, _aureliaMetadata, _aureliaTemplating, _aureliaLoader, _aureliaTaskQueue, _aureliaPath, _aureliaPal, _aureliaLogging) {
@@ -23711,1015 +23711,6 @@ define('aurelia-templating-binding',['exports', 'aurelia-logging', 'aurelia-bind
     config.container.registerAlias(_aureliaTemplating.BindingLanguage, TemplatingBindingLanguage);
   }
 });
-define('aurelia-fetch-client',['exports'], function (exports) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.json = json;
-
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-    return typeof obj;
-  } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
-  };
-
-  
-
-  function json(body) {
-    return new Blob([JSON.stringify(body)], { type: 'application/json' });
-  }
-
-  var HttpClientConfiguration = exports.HttpClientConfiguration = function () {
-    function HttpClientConfiguration() {
-      
-
-      this.baseUrl = '';
-      this.defaults = {};
-      this.interceptors = [];
-    }
-
-    HttpClientConfiguration.prototype.withBaseUrl = function withBaseUrl(baseUrl) {
-      this.baseUrl = baseUrl;
-      return this;
-    };
-
-    HttpClientConfiguration.prototype.withDefaults = function withDefaults(defaults) {
-      this.defaults = defaults;
-      return this;
-    };
-
-    HttpClientConfiguration.prototype.withInterceptor = function withInterceptor(interceptor) {
-      this.interceptors.push(interceptor);
-      return this;
-    };
-
-    HttpClientConfiguration.prototype.useStandardConfiguration = function useStandardConfiguration() {
-      var standardConfig = { credentials: 'same-origin' };
-      Object.assign(this.defaults, standardConfig, this.defaults);
-      return this.rejectErrorResponses();
-    };
-
-    HttpClientConfiguration.prototype.rejectErrorResponses = function rejectErrorResponses() {
-      return this.withInterceptor({ response: rejectOnError });
-    };
-
-    return HttpClientConfiguration;
-  }();
-
-  function rejectOnError(response) {
-    if (!response.ok) {
-      throw response;
-    }
-
-    return response;
-  }
-
-  var HttpClient = exports.HttpClient = function () {
-    function HttpClient() {
-      
-
-      this.activeRequestCount = 0;
-      this.isRequesting = false;
-      this.isConfigured = false;
-      this.baseUrl = '';
-      this.defaults = null;
-      this.interceptors = [];
-
-      if (typeof fetch === 'undefined') {
-        throw new Error('HttpClient requires a Fetch API implementation, but the current environment doesn\'t support it. You may need to load a polyfill such as https://github.com/github/fetch.');
-      }
-    }
-
-    HttpClient.prototype.configure = function configure(config) {
-      var _interceptors;
-
-      var normalizedConfig = void 0;
-
-      if ((typeof config === 'undefined' ? 'undefined' : _typeof(config)) === 'object') {
-        normalizedConfig = { defaults: config };
-      } else if (typeof config === 'function') {
-        normalizedConfig = new HttpClientConfiguration();
-        var c = config(normalizedConfig);
-        if (HttpClientConfiguration.prototype.isPrototypeOf(c)) {
-          normalizedConfig = c;
-        }
-      } else {
-        throw new Error('invalid config');
-      }
-
-      var defaults = normalizedConfig.defaults;
-      if (defaults && Headers.prototype.isPrototypeOf(defaults.headers)) {
-        throw new Error('Default headers must be a plain object.');
-      }
-
-      this.baseUrl = normalizedConfig.baseUrl;
-      this.defaults = defaults;
-      (_interceptors = this.interceptors).push.apply(_interceptors, normalizedConfig.interceptors || []);
-      this.isConfigured = true;
-
-      return this;
-    };
-
-    HttpClient.prototype.fetch = function (_fetch) {
-      function fetch(_x, _x2) {
-        return _fetch.apply(this, arguments);
-      }
-
-      fetch.toString = function () {
-        return _fetch.toString();
-      };
-
-      return fetch;
-    }(function (input, init) {
-      var _this = this;
-
-      trackRequestStart.call(this);
-
-      var request = Promise.resolve().then(function () {
-        return buildRequest.call(_this, input, init, _this.defaults);
-      });
-      var promise = processRequest(request, this.interceptors).then(function (result) {
-        var response = null;
-
-        if (Response.prototype.isPrototypeOf(result)) {
-          response = result;
-        } else if (Request.prototype.isPrototypeOf(result)) {
-          request = Promise.resolve(result);
-          response = fetch(result);
-        } else {
-          throw new Error('An invalid result was returned by the interceptor chain. Expected a Request or Response instance, but got [' + result + ']');
-        }
-
-        return request.then(function (_request) {
-          return processResponse(response, _this.interceptors, _request);
-        });
-      });
-
-      return trackRequestEndWith.call(this, promise);
-    });
-
-    return HttpClient;
-  }();
-
-  var absoluteUrlRegexp = /^([a-z][a-z0-9+\-.]*:)?\/\//i;
-
-  function trackRequestStart() {
-    this.isRequesting = !! ++this.activeRequestCount;
-  }
-
-  function trackRequestEnd() {
-    this.isRequesting = !! --this.activeRequestCount;
-  }
-
-  function trackRequestEndWith(promise) {
-    var handle = trackRequestEnd.bind(this);
-    promise.then(handle, handle);
-    return promise;
-  }
-
-  function parseHeaderValues(headers) {
-    var parsedHeaders = {};
-    for (var name in headers || {}) {
-      if (headers.hasOwnProperty(name)) {
-        parsedHeaders[name] = typeof headers[name] === 'function' ? headers[name]() : headers[name];
-      }
-    }
-    return parsedHeaders;
-  }
-
-  function buildRequest(input, init) {
-    var defaults = this.defaults || {};
-    var request = void 0;
-    var body = void 0;
-    var requestContentType = void 0;
-
-    var parsedDefaultHeaders = parseHeaderValues(defaults.headers);
-    if (Request.prototype.isPrototypeOf(input)) {
-      request = input;
-      requestContentType = new Headers(request.headers).get('Content-Type');
-    } else {
-      init || (init = {});
-      body = init.body;
-      var bodyObj = body ? { body: body } : null;
-      var requestInit = Object.assign({}, defaults, { headers: {} }, init, bodyObj);
-      requestContentType = new Headers(requestInit.headers).get('Content-Type');
-      request = new Request(getRequestUrl(this.baseUrl, input), requestInit);
-    }
-    if (!requestContentType && new Headers(parsedDefaultHeaders).has('content-type')) {
-      request.headers.set('Content-Type', new Headers(parsedDefaultHeaders).get('content-type'));
-    }
-    setDefaultHeaders(request.headers, parsedDefaultHeaders);
-    if (body && Blob.prototype.isPrototypeOf(body) && body.type) {
-      request.headers.set('Content-Type', body.type);
-    }
-    return request;
-  }
-
-  function getRequestUrl(baseUrl, url) {
-    if (absoluteUrlRegexp.test(url)) {
-      return url;
-    }
-
-    return (baseUrl || '') + url;
-  }
-
-  function setDefaultHeaders(headers, defaultHeaders) {
-    for (var name in defaultHeaders || {}) {
-      if (defaultHeaders.hasOwnProperty(name) && !headers.has(name)) {
-        headers.set(name, defaultHeaders[name]);
-      }
-    }
-  }
-
-  function processRequest(request, interceptors) {
-    return applyInterceptors(request, interceptors, 'request', 'requestError');
-  }
-
-  function processResponse(response, interceptors, request) {
-    return applyInterceptors(response, interceptors, 'response', 'responseError', request);
-  }
-
-  function applyInterceptors(input, interceptors, successName, errorName) {
-    for (var _len = arguments.length, interceptorArgs = Array(_len > 4 ? _len - 4 : 0), _key = 4; _key < _len; _key++) {
-      interceptorArgs[_key - 4] = arguments[_key];
-    }
-
-    return (interceptors || []).reduce(function (chain, interceptor) {
-      var successHandler = interceptor[successName];
-      var errorHandler = interceptor[errorName];
-
-      return chain.then(successHandler && function (value) {
-        return successHandler.call.apply(successHandler, [interceptor, value].concat(interceptorArgs));
-      } || identity, errorHandler && function (reason) {
-        return errorHandler.call.apply(errorHandler, [interceptor, reason].concat(interceptorArgs));
-      } || thrower);
-    }, Promise.resolve(input));
-  }
-
-  function identity(x) {
-    return x;
-  }
-
-  function thrower(x) {
-    throw x;
-  }
-});
-define('aurelia-breeze',['exports', 'breeze-client', 'aurelia-binding', 'aurelia-fetch-client'], function (exports, _breezeClient, _aureliaBinding, _aureliaFetchClient) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.BreezeObservationAdapter = exports.BreezeObjectObserver = exports.BreezePropertyObserver = exports.Deferred = exports.Q = exports.AjaxAdapter = exports.HttpResponse = undefined;
-  exports.configure = configure;
-
-  var _breezeClient2 = _interopRequireDefault(_breezeClient);
-
-  function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : {
-      default: obj
-    };
-  }
-
-  var _dec, _class;
-
-  var _createClass = function () {
-    function defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, descriptor.key, descriptor);
-      }
-    }
-
-    return function (Constructor, protoProps, staticProps) {
-      if (protoProps) defineProperties(Constructor.prototype, protoProps);
-      if (staticProps) defineProperties(Constructor, staticProps);
-      return Constructor;
-    };
-  }();
-
-  
-
-  var extend = _breezeClient2.default.core.extend;
-
-  var HttpResponse = exports.HttpResponse = function () {
-    function HttpResponse(status, data, headers, config) {
-      
-
-      this.config = config;
-      this.status = status;
-      this.data = data;
-      this.headers = headers;
-    }
-
-    HttpResponse.prototype.getHeader = function getHeader(headerName) {
-      return this.getHeaders(headerName);
-    };
-
-    HttpResponse.prototype.getHeaders = function getHeaders(headerName) {
-      if (headerName === null || headerName === undefined || headerName === '') {
-        return this.headers.headers;
-      }
-      return this.headers.get(headerName);
-    };
-
-    return HttpResponse;
-  }();
-
-  function encodeParams(obj) {
-    var query = '';
-    var subValue, innerObj, fullSubName;
-
-    for (var name in obj) {
-      var value = obj[name];
-
-      if (value instanceof Array) {
-        for (var i = 0; i < value.length; ++i) {
-          subValue = value[i];
-          fullSubName = name + '[' + i + ']';
-          innerObj = {};
-          innerObj[fullSubName] = subValue;
-          query += encodeParams(innerObj) + '&';
-        }
-      } else if (value && value.toISOString) {
-        query += encodeURIComponent(name) + '=' + encodeURIComponent(value.toISOString()) + '&';
-      } else if (value instanceof Object) {
-        for (var subName in value) {
-          subValue = value[subName];
-          fullSubName = name + '[' + subName + ']';
-          innerObj = {};
-          innerObj[fullSubName] = subValue;
-          query += encodeParams(innerObj) + '&';
-        }
-      } else if (value === null) {
-        query += encodeURIComponent(name) + '=&';
-      } else if (value !== undefined) {
-        query += encodeURIComponent(name) + '=' + encodeURIComponent(value) + '&';
-      }
-    }
-    return query.length ? query.substr(0, query.length - 1) : query;
-  };
-
-  var AjaxAdapter = exports.AjaxAdapter = function () {
-    function AjaxAdapter() {
-      
-
-      this.name = 'aurelia';
-      this.requestInterceptor = null;
-    }
-
-    AjaxAdapter.prototype.setHttpClientFactory = function setHttpClientFactory(createHttpClient) {
-      this.createHttpClient = createHttpClient;
-    };
-
-    AjaxAdapter.prototype.initialize = function initialize() {};
-
-    AjaxAdapter.prototype.ajax = function ajax(config) {
-      var requestInfo = {
-        adapter: this,
-        config: extend({}, config),
-        zConfig: config,
-        success: config.success,
-        error: config.error
-      };
-      requestInfo.config.request = this.httpClient;
-      requestInfo.config.headers = extend({}, config.headers);
-
-      if (_breezeClient2.default.core.isFunction(this.requestInterceptor)) {
-        this.requestInterceptor(requestInfo);
-        if (this.requestInterceptor.oneTime) {
-          this.requestInterceptor = null;
-        }
-        if (!requestInfo.config) {
-          return;
-        }
-      }
-
-      config = requestInfo.config;
-      var init = {
-        method: config.type
-      };
-
-      init.headers = new Headers();
-      for (var header in config.headers) {
-        if (config.headers.hasOwnProperty(header)) {
-          init.headers.append(header, config.headers[header]);
-        }
-      }
-
-      if (config.hasOwnProperty('data')) {
-        init.body = config.data;
-      }
-
-      if (config.params) {
-        var delim = config.url.indexOf('?') >= 0 ? '&' : '?';
-        config.url = config.url + delim + encodeParams(config.params);
-      }
-
-      if (config.contentType) {
-        init.headers.append('Content-Type', config.contentType);
-      }
-
-      requestInfo.config.request.fetch(config.url, init).then(function (response) {
-        response.json().then(function (data) {
-          var breezeResponse = new HttpResponse(response.status, data, response.headers, requestInfo.zConfig);
-
-          if (response.ok) {
-            requestInfo.success(breezeResponse);
-          } else {
-            requestInfo.error(breezeResponse);
-          }
-        });
-      }).catch(function (error) {
-        return requestInfo.error(error);
-      });
-    };
-
-    _createClass(AjaxAdapter, [{
-      key: 'httpClient',
-      get: function get() {
-        return this.client || (this.client = this.createHttpClient());
-      }
-    }]);
-
-    return AjaxAdapter;
-  }();
-
-  _breezeClient2.default.config.registerAdapter('ajax', AjaxAdapter);
-
-  var Q = exports.Q = function () {
-    function Q() {
-      
-    }
-
-    Q.defer = function defer() {
-      return new Deferred();
-    };
-
-    Q.resolve = function resolve(data) {
-      return Promise.resolve(data);
-    };
-
-    Q.reject = function reject(reason) {
-      return Promise.reject(reason);
-    };
-
-    return Q;
-  }();
-
-  var Deferred = exports.Deferred = function Deferred() {
-    
-
-    var self = this;
-    this.promise = new Promise(function (resolve, reject) {
-      self.resolve = resolve;
-      self.reject = reject;
-    });
-  };
-
-  var BreezePropertyObserver = exports.BreezePropertyObserver = (_dec = (0, _aureliaBinding.subscriberCollection)(), _dec(_class = function () {
-    function BreezePropertyObserver(obj, propertyName) {
-      
-
-      this.obj = obj;
-      this.propertyName = propertyName;
-    }
-
-    BreezePropertyObserver.prototype.getValue = function getValue() {
-      return this.obj[this.propertyName];
-    };
-
-    BreezePropertyObserver.prototype.setValue = function setValue(newValue) {
-      this.obj[this.propertyName] = newValue;
-    };
-
-    BreezePropertyObserver.prototype.subscribe = function subscribe(context, callable) {
-      if (this.addSubscriber(context, callable)) {
-        this.oldValue = this.obj[this.propertyName];
-        this.obj.__breezeObserver__.subscriberAdded();
-      }
-    };
-
-    BreezePropertyObserver.prototype.unsubscribe = function unsubscribe(context, callable) {
-      if (this.removeSubscriber(context, callable)) {
-        this.obj.__breezeObserver__.subscriberRemoved();
-      }
-    };
-
-    return BreezePropertyObserver;
-  }()) || _class);
-
-
-  function handleChange(change) {
-    var object = change.entity;
-    var propertyName = change.propertyName;
-    var objectObserver = object.__breezeObserver__;
-    if (propertyName === null) {
-      var observers = objectObserver.observers;
-      for (propertyName in observers) {
-        if (observers.hasOwnProperty(propertyName)) {
-          change.propertyName = propertyName;
-          handleChange(change);
-        }
-      }
-      change.propertyName = null;
-      return;
-    }
-
-    var observer = objectObserver.observers[propertyName];
-    var newValue = object[propertyName];
-    if (!observer || newValue === observer.oldValue) {
-      return;
-    }
-    observer.callSubscribers(newValue, observer.oldValue);
-    observer.oldValue = newValue;
-  }
-
-  var BreezeObjectObserver = exports.BreezeObjectObserver = function () {
-    function BreezeObjectObserver(obj) {
-      
-
-      this.obj = obj;
-      this.observers = {};
-      this.subscribers = 0;
-    }
-
-    BreezeObjectObserver.prototype.subscriberAdded = function subscriberAdded() {
-      if (this.subscribers === 0) {
-        this.subscription = this.obj.entityAspect.propertyChanged.subscribe(handleChange);
-      }
-
-      this.subscribers++;
-    };
-
-    BreezeObjectObserver.prototype.subscriberRemoved = function subscriberRemoved(propertyName, callback) {
-      this.subscribers--;
-
-      if (this.subscribers === 0) {
-        this.obj.entityAspect.propertyChanged.unsubscribe(this.subscription);
-      }
-    };
-
-    BreezeObjectObserver.prototype.getObserver = function getObserver(propertyName) {
-      return this.observers[propertyName] || (this.observers[propertyName] = new BreezePropertyObserver(this.obj, propertyName));
-    };
-
-    return BreezeObjectObserver;
-  }();
-
-  function createObserverLookup(obj) {
-    var value = new BreezeObjectObserver(obj);
-
-    Object.defineProperty(obj, '__breezeObserver__', {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
-
-    return value;
-  }
-
-  function createCanObserveLookup(entityType) {
-    var value = {};
-    var properties = entityType.getProperties();
-    for (var i = 0, ii = properties.length; i < ii; i++) {
-      var property = properties[i];
-
-      value[property.name] = property.isDataProperty || property.isScalar;
-    }
-
-    Object.defineProperty(entityType, '__canObserve__', {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: value
-    });
-
-    return value;
-  }
-
-  var BreezeObservationAdapter = exports.BreezeObservationAdapter = function () {
-    function BreezeObservationAdapter() {
-      
-    }
-
-    BreezeObservationAdapter.prototype.getObserver = function getObserver(object, propertyName, descriptor) {
-      var type = object.entityType;
-      if (!type || !(type.__canObserve__ || createCanObserveLookup(type))[propertyName]) {
-        return null;
-      }
-
-      var observerLookup = object.__breezeObserver__ || createObserverLookup(object);
-      return observerLookup.getObserver(propertyName);
-    };
-
-    return BreezeObservationAdapter;
-  }();
-
-  function configure(frameworkConfig) {
-    _breezeClient2.default.config.initializeAdapterInstance('modelLibrary', 'backingStore');
-
-    _breezeClient2.default.config.setQ(Q);
-
-    frameworkConfig.container.get(_aureliaBinding.ObserverLocator).addAdapter(new BreezeObservationAdapter());
-
-    var adapter = _breezeClient2.default.config.initializeAdapterInstance('ajax', 'aurelia', true);
-    adapter.setHttpClientFactory(function () {
-      return frameworkConfig.container.get(_aureliaFetchClient.HttpClient);
-    });
-  }
-});
-
-define("breeze-client", [],function(){});
-
-define("breeze-client", [],function(){});
-
-define('breeze',['require','exports','module'],function (require, exports, module) {// Constructor
-function Breeze (method) {
-  this.steps = []
-
-  if (typeof method === 'function' || isPromise(method)) {
-    this.then(method)
-  }
-}
-
-// Run next step registered on system step list
-Breeze.prototype.run = function () {
-  var args = this.args || []
-  var step = this.steps.shift()
-  var type = step[0]
-
-  if (this.skip && typeof this.skip === 'number') {
-    this.skip--
-    return this.check(true)
-  }
-
-  try {
-    this.running = true
-    if (this[type + 'Handler']) return this[type + 'Handler'](step, args)
-    return this.check(true)
-  } catch (err) {
-    return this.onUncaughtError(err)
-  }
-}
-
-// Set error on system object, invokes available error methods, short-circuit system
-Breeze.prototype.onUncaughtError = function (err) {
-  this.err = err
-  if (this.onError) this.onError(err)
-  if (this.onDeferredError) this.onDeferredError(err)
-  return (this.steps = [] && this.check())
-}
-
-// Determine system state and invoke next step when possible
-Breeze.prototype.check = function (pop, skip) {
-  this.steps = this.steps || []
-
-  if (pop && this.steps.length) {
-    return this.run()
-  }
-
-  if (pop && !this.steps.length) {
-    return (this.running = false)
-  }
-
-  if (this.steps.length && !this.running) {
-    return this.run()
-  }
-}
-
-// Add iteration step to the system
-Breeze.prototype.each = function (iterable, iteratee, next) {
-  if (this.err) return this
-  this.steps.push(['each', iterable, iteratee, next])
-  this.check()
-  return this
-}
-
-// Iterate over each iterable and invoke iteratee for each item in iterables,
-// on error break iteration and give error to system
-// @private
-Breeze.prototype.eachHandler = function (step, args) {
-  var iterables = step[1]
-  var iteratee = step[2]
-  var next = step[3]
-  var system = this
-  var index = 0
-  var count = 0
-  var lookup
-  var length
-
-  if (typeof iterables === 'function') {
-    iterables = iterables.apply(this.context, args)
-  }
-
-  if (isPlainObject(iterables)) {
-    lookup = iterables
-    iterables = Object.keys(iterables)
-  }
-
-  length = iterables.length
-
-  function iterableCallback (error, value) {
-    if (system.err) return
-    if (error) return system.onUncaughtError(error)
-    if (arguments.length > 1) {
-      if (lookup) {
-        lookup[iterables[count]] = value
-      } else {
-        iterables[count] = value
-      }
-    }
-
-    if (++count === length) {
-      if (typeof next === 'function') {
-        args.unshift(system.createStepCallback())
-        return next.apply(system.context || [], args)
-      }
-
-      return system.check(true)
-    }
-  }
-
-  for (; index < length; index++) {
-    setImmediate(
-      iteratee,
-      lookup ? lookup[iterables[index]] : iterables[index],
-      lookup ? iterables[index] : index,
-      iterableCallback
-    )
-  }
-
-  return null
-}
-
-// Add conditional step to the system
-Breeze.prototype.if = Breeze.prototype.when = Breeze.prototype.maybe = function (arg, next) {
-  if (this.err) return this
-  this.steps.push(['when', arg, next])
-  this.check()
-  return this
-}
-
-// Add step to evaluate truthyness of first argument to invoke callback
-Breeze.prototype.some = function (arg, next) {
-  if (this.err || this.hasNoneHappened) return this
-  this.hasSome = true
-  this.steps.push(['some', arg, next])
-  this.check()
-  return this
-}
-
-// When some has already been invoked short-circuit and continue, when check is truthy
-// invoke the resolution method, otherwise continue.
-// @private
-Breeze.prototype.someHandler = Breeze.prototype.whenHandler = function (step, args) {
-  var resolution = step[2]
-  var check = step[1]
-  var type = step[0]
-
-  if (type === 'some' && this.hasSomeHappened) {
-    return this.check(true)
-  }
-
-  if ((typeof check === 'function' && check.apply(this.context, args)) || (typeof check !== 'function' && check)) {
-    if (type === 'when') this.hasWhenHappened = true
-    if (type === 'some') this.hasSomeHappened = true
-
-    step = resolution
-    args.unshift(this.createStepCallback())
-    return step.apply(this.context, args)
-  }
-
-  return this.check(true)
-}
-
-// Add step to handle the case of when no thruthy some statements occured
-Breeze.prototype.none = function (next) {
-  if (this.err || this.hasNoneHappened) return this
-
-  if (!this.hasSome) {
-    throw new Error('Cannot add .none check before adding .some checks')
-  }
-
-  if (this.hasSome) {
-    this.hasNoneHappened = true
-    this.steps.push(['none', next])
-    this.check()
-  }
-
-  return this
-}
-
-// Determine whether a some step has passed, when none have passed invoke passed none callback.
-// @private
-Breeze.prototype.noneHandler = function (step, args) {
-  if (!this.hasSomeHappened) {
-    this.hasNoneHappened = true
-    step = step[1]
-    args.unshift(this.createStepCallback())
-    return step.apply(this.context, args)
-  }
-
-  return this.check(true)
-}
-
-// Add variable passing step to system to allow quick introduction of variables to system
-Breeze.prototype.pass = function () {
-  if (this.err) return this
-  var step
-  step = cloneArguments(arguments)
-  step.unshift('pass')
-  this.steps.push(step)
-  this.check()
-  return this
-}
-
-// Determine step arguments and invoke first argument when it is a function, then concatenate results
-// to the system's arguments list.
-// @private
-Breeze.prototype.passHandler = function (step, args) {
-  step.shift()
-  if (step.length === 1 && typeof step === 'function') step[0] = step[0]()
-  this.args = args
-  this.args = this.args.concat(step)
-  return this.check(true)
-}
-
-// Add generic thennable step to the system
-Breeze.prototype.then = function (next) {
-  if (this.err) return this
-  this.steps.push(['then', next])
-  this.check()
-  return this
-}
-
-// Thennable logic handler
-// @private
-Breeze.prototype.thenHandler = function (step, args) {
-  args.unshift(this.createStepCallback())
-  return step[1].apply(this.context || this, args)
-}
-
-// Add error handler to system, invoked immediately when error exists.
-Breeze.prototype.catch = function (next) {
-  if (this.err) {
-    next(this.err)
-
-    if (this.onDeferredError) {
-      this.onDeferredError(this.err)
-    }
-
-    return this
-  }
-
-  this.onError = next
-  this.check()
-  return this
-}
-
-// Generate deferred promise object for the current flow system
-Breeze.prototype.promise = Breeze.prototype.deferred = function () {
-  var system = this
-  var deferred = {
-    then: function (next) {
-      if (system.err) return deferred
-
-      system.steps.push(['then', function () {
-        return next.apply(this, cloneArguments(arguments, 1))
-      }])
-
-      system.check()
-      return deferred
-    },
-
-    catch: function (next) {
-      if (system.err) return next(system.err)
-      system.onDeferredError = next
-      return deferred
-    }
-  }
-
-  return deferred
-}
-
-// Takes the next (optional) callback, and generates a callback to be passed as the first argument.
-Breeze.prototype.createStepCallback = function () {
-  var system = this
-
-  function handler (err) {
-    if (err) return system.onUncaughtError(err)
-    system.args = cloneArguments(arguments, 1)
-    system.check(true)
-  }
-
-  function success () {
-    system.args = system.args.concat(cloneArguments(arguments))
-    system.args.unshift(null)
-    handler.apply(system.context, system.args)
-  }
-
-  return function (err) {
-    if (err === 'skip') {
-      system.skip = arguments[1] || 1
-      system.args = system.args ? system.args.slice(1) : []
-      return system.check(true)
-    }
-
-    system.context = this
-    system.args = cloneArguments(arguments, 1)
-
-    if (isPromise(err)) {
-      return typeof err.catch === 'function'
-        ? err.then(success).catch(handler)
-        : err.then(success, handler)
-    }
-
-    return handler.apply(system.context, arguments)
-  }
-}
-
-// Resets system state to an empty state
-Breeze.prototype.reset = function () {
-  this.hasMaybeHappened = null
-  this.hasNoneHappened = null
-  this.hasSomeHappened = null
-  this.hasSome = null
-  this.onError = null
-  this.running = null
-  this.err = null
-  this.args = null
-  this.context = null
-  this.steps = []
-
-  return this
-}
-
-// Debug garbage collection utility
-// @private
-Breeze.prototype.gc = function () {
-  this.reset()
-  this.steps = null
-}
-
-// Export breeze constructor
-module.exports = function breeze (method) {
-  return new Breeze(method)
-}
-
-// Shim for setImmediate using setTimeout
-if (typeof setImmediate !== 'function') {
-  function setImmediate () {
-    var args = cloneArguments(arguments)
-    args.splice(1, 0, 0)
-    return setTimeout.apply(null, args)
-  }
-}
-
-// Convert promise signature into callback signature
-function promiseToCallback (promise) {
-  return function convertedPromiseCallbackStructure (callback) {
-    return typeof promise.catch === 'function'
-      ? promise.then(function (data) {
-          setImmediate(callback, null, data)
-        }).catch(function (error) {
-          setImmediate(callback, error)
-        })
-      : promise.then(function (data) {
-          setImmediate(callback, null, data)
-        }, function (error) {
-          setImmediate(callback, error)
-        })
-    }
-}
-
-// Clone and slice arguments object into a new array without leaking.
-function cloneArguments (arg, begin, end) {
-  var i = 0
-  var len = arg.length
-  var args = new Array(len)
-
-  for (; i < len; ++i) args[i] = arg[i]
-  return args = args.slice(begin || 0, end || undefined)
-}
-
-// Determine whether passed object is a promise or promise variation
-function isPromise (obj) {
-  return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
-}
-
-// Determine whether passed object is a plain object or not.
-function isPlainObject (value) {
-  return Object.prototype.toString.call(value) === '[object Object]'
-}
-});
-
 define('text',{});
 define('aurelia-templating-resources/aurelia-templating-resources',['exports', './compose', './if', './with', './repeat', './show', './hide', './sanitize-html', './replaceable', './focus', 'aurelia-templating', './css-resource', './html-sanitizer', './attr-binding-behavior', './binding-mode-behaviors', './throttle-binding-behavior', './debounce-binding-behavior', './signal-binding-behavior', './binding-signaler', './update-trigger-binding-behavior', './abstract-repeater', './repeat-strategy-locator', './html-resource-plugin', './null-repeat-strategy', './array-repeat-strategy', './map-repeat-strategy', './set-repeat-strategy', './number-repeat-strategy', './repeat-utilities', './analyze-view-factory', './aurelia-hide-style'], function (exports, _compose, _if, _with, _repeat, _show, _hide, _sanitizeHtml, _replaceable, _focus, _aureliaTemplating, _cssResource, _htmlSanitizer, _attrBindingBehavior, _bindingModeBehaviors, _throttleBindingBehavior, _debounceBindingBehavior, _signalBindingBehavior, _bindingSignaler, _updateTriggerBindingBehavior, _abstractRepeater, _repeatStrategyLocator, _htmlResourcePlugin, _nullRepeatStrategy, _arrayRepeatStrategy, _mapRepeatStrategy, _setRepeatStrategy, _numberRepeatStrategy, _repeatUtilities, _analyzeViewFactory, _aureliaHideStyle) {
   'use strict';
@@ -27788,4 +26779,4 @@ define('aurelia-testing/component-tester',['exports', 'aurelia-templating', 'aur
     return ComponentTester;
   }();
 });
-function _aureliaConfigureModuleLoader(){requirejs.config({"baseUrl":"src/","paths":{"aurelia-binding":"../node_modules/aurelia-binding/dist/amd/aurelia-binding","aurelia-bootstrapper":"../node_modules/aurelia-bootstrapper/dist/amd/aurelia-bootstrapper","aurelia-event-aggregator":"../node_modules/aurelia-event-aggregator/dist/amd/aurelia-event-aggregator","aurelia-dependency-injection":"../node_modules/aurelia-dependency-injection/dist/amd/aurelia-dependency-injection","aurelia-framework":"../node_modules/aurelia-framework/dist/amd/aurelia-framework","aurelia-history":"../node_modules/aurelia-history/dist/amd/aurelia-history","aurelia-history-browser":"../node_modules/aurelia-history-browser/dist/amd/aurelia-history-browser","aurelia-loader":"../node_modules/aurelia-loader/dist/amd/aurelia-loader","aurelia-loader-default":"../node_modules/aurelia-loader-default/dist/amd/aurelia-loader-default","aurelia-logging":"../node_modules/aurelia-logging/dist/amd/aurelia-logging","aurelia-logging-console":"../node_modules/aurelia-logging-console/dist/amd/aurelia-logging-console","aurelia-metadata":"../node_modules/aurelia-metadata/dist/amd/aurelia-metadata","aurelia-pal":"../node_modules/aurelia-pal/dist/amd/aurelia-pal","aurelia-pal-browser":"../node_modules/aurelia-pal-browser/dist/amd/aurelia-pal-browser","aurelia-path":"../node_modules/aurelia-path/dist/amd/aurelia-path","aurelia-polyfills":"../node_modules/aurelia-polyfills/dist/amd/aurelia-polyfills","aurelia-route-recognizer":"../node_modules/aurelia-route-recognizer/dist/amd/aurelia-route-recognizer","aurelia-router":"../node_modules/aurelia-router/dist/amd/aurelia-router","aurelia-task-queue":"../node_modules/aurelia-task-queue/dist/amd/aurelia-task-queue","aurelia-templating":"../node_modules/aurelia-templating/dist/amd/aurelia-templating","aurelia-templating-binding":"../node_modules/aurelia-templating-binding/dist/amd/aurelia-templating-binding","aurelia-fetch-client":"../node_modules/aurelia-fetch-client/dist/amd/aurelia-fetch-client","aurelia-breeze":"../node_modules/aurelia-breeze/dist/amd/aurelia-breeze","breeze-client":"../node_modules/breeze-client/breeze","breeze":"../node_modules/breeze/breeze","text":"../node_modules/text/text","app-bundle":"../scripts/app-bundle"},"packages":[{"name":"aurelia-templating-resources","location":"../node_modules/aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"../node_modules/aurelia-templating-router/dist/amd","main":"aurelia-templating-router"},{"name":"aurelia-testing","location":"../node_modules/aurelia-testing/dist/amd","main":"aurelia-testing"}],"stubModules":["text"],"shim":{},"bundles":{"app-bundle":["app","environment","main","resources/adapters/observation-adapter","resources/index"]}})}
+function _aureliaConfigureModuleLoader(){requirejs.config({"baseUrl":"src/","paths":{"aurelia-binding":"../node_modules/aurelia-binding/dist/amd/aurelia-binding","aurelia-bootstrapper":"../node_modules/aurelia-bootstrapper/dist/amd/aurelia-bootstrapper","aurelia-dependency-injection":"../node_modules/aurelia-dependency-injection/dist/amd/aurelia-dependency-injection","aurelia-event-aggregator":"../node_modules/aurelia-event-aggregator/dist/amd/aurelia-event-aggregator","aurelia-framework":"../node_modules/aurelia-framework/dist/amd/aurelia-framework","aurelia-history":"../node_modules/aurelia-history/dist/amd/aurelia-history","aurelia-history-browser":"../node_modules/aurelia-history-browser/dist/amd/aurelia-history-browser","aurelia-loader":"../node_modules/aurelia-loader/dist/amd/aurelia-loader","aurelia-loader-default":"../node_modules/aurelia-loader-default/dist/amd/aurelia-loader-default","aurelia-logging":"../node_modules/aurelia-logging/dist/amd/aurelia-logging","aurelia-logging-console":"../node_modules/aurelia-logging-console/dist/amd/aurelia-logging-console","aurelia-metadata":"../node_modules/aurelia-metadata/dist/amd/aurelia-metadata","aurelia-pal":"../node_modules/aurelia-pal/dist/amd/aurelia-pal","aurelia-pal-browser":"../node_modules/aurelia-pal-browser/dist/amd/aurelia-pal-browser","aurelia-path":"../node_modules/aurelia-path/dist/amd/aurelia-path","aurelia-polyfills":"../node_modules/aurelia-polyfills/dist/amd/aurelia-polyfills","aurelia-route-recognizer":"../node_modules/aurelia-route-recognizer/dist/amd/aurelia-route-recognizer","aurelia-router":"../node_modules/aurelia-router/dist/amd/aurelia-router","aurelia-task-queue":"../node_modules/aurelia-task-queue/dist/amd/aurelia-task-queue","aurelia-templating":"../node_modules/aurelia-templating/dist/amd/aurelia-templating","aurelia-templating-binding":"../node_modules/aurelia-templating-binding/dist/amd/aurelia-templating-binding","text":"../node_modules/text/text","app-bundle":"../scripts/app-bundle"},"packages":[{"name":"aurelia-templating-resources","location":"../node_modules/aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"../node_modules/aurelia-templating-router/dist/amd","main":"aurelia-templating-router"},{"name":"aurelia-testing","location":"../node_modules/aurelia-testing/dist/amd","main":"aurelia-testing"}],"stubModules":["text"],"shim":{},"bundles":{"app-bundle":["app","environment","main","resources/adapters/observation-adapter","resources/index"]}})}
